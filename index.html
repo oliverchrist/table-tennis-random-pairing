@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#143f38">
+  <title>Plattenwechsel · Tischtennis-Rundenplaner</title>
+  <style>
+    :root { color-scheme: light; --ink: #173e37; --muted: #65756d; --paper: #f6f5ef; --line: #dddeda; --green: #225f50; --lime: #d7ed9a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--ink); padding: 11px 16px; font-weight: 650; }
+    button:hover:not(:disabled) { background: #edf2e7; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid #7d9d36; outline-offset: 3px; }
+    .primary { background: var(--green); color: white; border-color: var(--green); }
+    .primary:hover:not(:disabled) { background: #174b3e; }
+    .quiet { background: transparent; }
+    .danger { color: #a22f2f; }
+    header { border-bottom: 1px solid var(--line); padding: 23px max(24px, calc((100vw - 1440px) / 2)); display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; gap: 13px; align-items: center; font-size: 19px; font-weight: 800; letter-spacing: -.6px; }
+    .logo { width: 36px; height: 36px; border-radius: 50%; background: var(--green); color: var(--lime); display: grid; place-items: center; font-size: 24px; }
+    .eyebrow { text-transform: uppercase; font-size: 11px; letter-spacing: 2px; font-weight: 750; }
+    .header-note { color: var(--muted); font-size: 13px; }
+    main { max-width: 1488px; margin: auto; padding: 36px 24px 24px; }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
+    h1 { margin: 7px 0 9px; font-size: clamp(28px, 3vw, 42px); font-weight: 750; letter-spacing: -1.5px; }
+    p { line-height: 1.6; }
+    .intro p { margin: 0; color: var(--muted); }
+    .badge { display: inline-block; background: #e7eddc; border-radius: 20px; padding: 7px 12px; font-size: 12px; font-weight: 650; white-space: nowrap; }
+    .layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
+    .panel { background: white; border: 1px solid var(--line); border-radius: 16px; }
+    aside { padding: 22px; }
+    h2 { font-size: 18px; letter-spacing: -.4px; margin: 0; }
+    .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .count { background: var(--paper); padding: 4px 10px; border-radius: 8px; font-size: 13px; }
+    label { display: block; font-size: 12px; font-weight: 650; margin-bottom: 7px; }
+    textarea, input { border: 1px solid #cfd6cf; border-radius: 9px; padding: 11px; color: var(--ink); background: #fcfcfa; }
+    textarea { width: 100%; resize: vertical; min-height: 110px; }
+    .add-form { margin-top: 22px; }
+    .add-form button { width: 100%; margin-top: 8px; }
+    .hint { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .players { list-style: none; padding: 0; margin: 18px 0 0; max-height: 480px; overflow: auto; }
+    .player { display: flex; gap: 9px; align-items: center; padding: 11px 0; border-top: 1px solid #edf0e9; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: #edf2e6; font-size: 12px; font-weight: 750; flex-shrink: 0; }
+    .player-text { flex: 1; min-width: 0; }
+    .player-name { font-size: 13px; font-weight: 650; overflow-wrap: anywhere; }
+    .player-info { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .icon-button { padding: 6px 8px; min-width: 32px; font-size: 14px; }
+    .is-paused { background: #fff1ce; border-color: #d4aa46; }
+    .roster-footer { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 16px; }
+    .roster-footer button { width: 100%; font-size: 12px; }
+    .roster-footer button + button { margin-top: 8px; }
+    .board { min-width: 0; }
+    .round-bar { padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; gap: 18px; }
+    .round-title { margin-top: 6px; font-size: 25px; font-weight: 750; letter-spacing: -.8px; }
+    .round-subtitle { font-size: 12px; color: var(--muted); margin-top: 5px; }
+    .timer { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .timer-readout { font-variant-numeric: tabular-nums; font-size: 34px; letter-spacing: -1px; font-weight: 650; }
+    .timer-setting input { width: 75px; padding: 7px; }
+    .timer-setting label { margin: 0 0 3px; font-size: 10px; }
+    .timer-buttons { display: flex; gap: 6px; }
+    .timer-buttons button { padding: 9px 11px; font-size: 12px; }
+    .finished .timer-readout { color: #ab462a; }
+    .progress { height: 4px; background: #eaf0e4; }
+    .progress div { height: 100%; background: #7e9f47; width: 100%; transition: width .25s linear; }
+    .courts-panel { overflow: hidden; }
+    .courts-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 24px 0; }
+    .courts-heading span { font-size: 12px; color: var(--muted); }
+    .courts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; padding: 26px 24px 30px; }
+    .court { min-width: 0; }
+    .court-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 11px; font-weight: 750; letter-spacing: 1px; }
+    .court-label small { color: var(--muted); font-size: 10px; font-weight: 500; letter-spacing: 0; }
+    .table { position: relative; height: 270px; background: var(--green); border: 5px solid #386e60; border-radius: 7px; box-shadow: 0 9px 0 #e9ece4; padding: 13px; display: flex; flex-direction: column; justify-content: space-between; }
+    .table::before { content: ""; position: absolute; inset: 7px; border: 2px solid #b0ccc0; pointer-events: none; }
+    .table::after { content: ""; position: absolute; top: 50%; left: -5px; right: -5px; height: 5px; background: repeating-linear-gradient(90deg, #dfeadf 0 2px, #7c9b8e 2px 4px); box-shadow: 0 2px 4px #123c35; pointer-events: none; }
+    .center-line { position: absolute; left: calc(50% - 1px); top: 8px; bottom: 8px; width: 2px; background: #aac5b8; }
+    .team { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; z-index: 1; min-height: 87px; align-items: center; }
+    .position { min-width: 0; }
+    .position.center { grid-column: 1 / -1; }
+    .position-label { display: block; color: #e5efde; font-size: 10px; text-align: center; margin-bottom: 5px; }
+    .position-legend { margin: 0; padding: 0 24px; font-size: 11px; color: var(--muted); line-height: 1.5; }
+    .seat { border-radius: 6px; background: #f5f7ed; padding: 9px 6px; text-align: center; font-size: 12px; font-weight: 700; overflow-wrap: anywhere; box-shadow: 0 2px 3px #143f3833; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+    .seat.empty { background: #ffffff12; color: #c1d3c7; font-weight: 450; box-shadow: none; }
+    .court-foot { text-align: center; font-size: 11px; color: var(--muted); margin-top: 17px; }
+    .round-actions { border-top: 1px solid var(--line); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .round-actions p { margin: 0; font-size: 12px; color: var(--muted); max-width: 460px; }
+    .round-actions button { flex-shrink: 0; }
+    .waiting { margin-top: 20px; padding: 20px 24px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .chip { padding: 7px 12px; background: var(--paper); border-radius: 7px; font-size: 12px; overflow-wrap: anywhere; }
+    .chip.pause { background: #fff3d8; }
+    .bottom { margin-top: 20px; padding: 20px 24px; }
+    summary { cursor: pointer; font-size: 13px; font-weight: 650; }
+    details p, details li { color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .history-list { display: grid; gap: 12px; margin-top: 16px; }
+    .history-entry { background: var(--paper); padding: 13px; border-radius: 9px; }
+    .history-entry strong { font-size: 13px; }
+    .history-entry p { margin: 5px 0; }
+    footer { margin: 25px 0 0; color: var(--muted); font-size: 11px; text-align: center; }
+    #notice { margin-bottom: 20px; padding: 14px 18px; border-radius: 10px; background: #e7efdc; font-size: 13px; line-height: 1.5; }
+    #notice.error { background: #fde8df; color: #8f3426; }
+    [hidden] { display: none !important; }
+    dialog { border: 1px solid var(--line); border-radius: 16px; padding: 25px; max-width: 430px; color: var(--ink); }
+    dialog::backdrop { background: #10382d77; }
+    dialog p { color: var(--muted); font-size: 14px; }
+    .dialog-buttons { display: flex; justify-content: flex-end; gap: 10px; }
+    @media (max-width: 1150px) { .layout { grid-template-columns: 260px minmax(0, 1fr); gap: 18px; } .round-bar { align-items: start; flex-direction: column; } .courts { gap: 18px; padding: 24px 18px; } .table { padding: 12px 8px; } }
+    @media (max-width: 850px) { .layout { grid-template-columns: 1fr; } aside { order: 2; } .players { max-height: 300px; } .intro .badge { display: none; } .round-bar { flex-direction: row; flex-wrap: wrap; } .table { height: 270px; } }
+    @media (max-width: 540px) { main { padding: 24px 12px; } header { padding: 18px; } .header-note { display: none; } .courts { gap: 13px; padding: 22px 13px; } .table { height: 250px; padding: 12px 5px; border-width: 3px; } .team { gap: 3px; } .position-label { font-size: 9px; } .seat { font-size: 10px; padding: 8px 3px; -webkit-line-clamp: 4; } .court-label { letter-spacing: 0; } .court-label small { display: none; } .court-foot { font-size: 10px; } .round-actions { flex-direction: column; align-items: stretch; } .timer { gap: 10px; } .round-bar, .waiting, .bottom { padding: 18px; } }
+    @media (max-width: 540px) { .position-label { font-size: 0; } .position-label::after { content: attr(data-short); font-size: 9px; } }
+    @media (prefers-reduced-motion: reduce) { .progress div { transition: none; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="logo" aria-hidden="true">↗</span> Plattenwechsel</div>
+    <span class="header-note">Neue Runde. Neue Begegnungen.</span>
+  </header>
+  <main>
+    <div class="intro">
+      <div><div class="eyebrow">Dein Tischtennis-Rundenplaner</div><h1>Alle spielen. Immer anders.</h1><p>Spieler eintragen, Platten verteilen und gemeinsam in Bewegung bleiben.</p></div>
+      <span class="badge">3 Platten · bis zu 12 Spielplätze</span>
+    </div>
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <div class="layout">
+      <aside class="panel">
+        <div class="section-heading"><h2>Spielerliste</h2><span id="player-count" class="count">0</span></div>
+        <form id="add-form" class="add-form">
+          <label for="names">Wer ist heute dabei?</label>
+          <textarea id="names" placeholder="Anna&#10;Ben&#10;Clara&#10;… oder Namen mit Komma trennen" maxlength="8100"></textarea>
+          <button class="primary" type="submit">+ Spieler hinzufügen</button>
+        </form>
+        <p class="hint">Ein Name je Zeile oder mit Komma / Semikolon getrennt. Änderungen gelten ab der nächsten Runde.</p>
+        <ul id="players" class="players" aria-label="Teilnehmende"></ul>
+        <div class="roster-footer">
+          <p class="hint">Ⅱ = nächste Runde einmal aussetzen<br>× = aus der Spielerliste entfernen</p>
+          <button id="demo" class="quiet">12 Beispielspieler laden</button>
+          <button id="clear-players" class="danger quiet" disabled>Alle Spieler entfernen</button>
+        </div>
+      </aside>
+      <section class="board" aria-label="Rundeneinteilung">
+        <div class="panel courts-panel">
+          <div id="round-bar" class="round-bar">
+            <div><div class="eyebrow" id="round-state">Bereit, wenn ihr es seid</div><div id="round-title" class="round-title">Noch keine Runde</div><div id="round-subtitle" class="round-subtitle">Mindestens 2 Spieler hinzufügen.</div></div>
+            <div class="timer">
+              <div id="timer-readout" class="timer-readout" role="timer" aria-label="Verbleibende Rundenzeit">10:00</div>
+              <div class="timer-setting"><label for="duration">Minuten</label><input id="duration" type="number" min="0.1" max="180" step="0.1" value="10"></div>
+              <div class="timer-buttons"><button id="timer-toggle" disabled>Timer starten</button><button id="timer-reset" title="Timer auf die eingestellte Rundenzeit zurücksetzen" disabled>↺</button></div>
+            </div>
+          </div>
+          <div class="progress" aria-hidden="true"><div id="progress"></div></div>
+          <div class="courts-heading"><h2>Die Platten</h2><span>Zusammen auf einer Platte = eine Begegnung</span></div>
+          <p class="position-legend">Links (L) / Rechts (R) aus Sicht des jeweiligen Teams beim Blick zum Netz. Das obere Team ist deshalb spiegelverkehrt dargestellt. Einzelspieler stehen in der Mitte.</p>
+          <div id="courts" class="courts"></div>
+          <div class="round-actions"><p id="quality">Die erste Einteilung ist zufällig. Danach zählt eure Begegnungshistorie.</p><button id="next-round" class="primary" disabled>Erste Runde einteilen →</button></div>
+        </div>
+        <div class="panel waiting">
+          <div class="section-heading"><h2>Auf der Bank</h2><span id="waiting-count" class="count">0</span></div>
+          <div id="waiting" class="chips"><span class="hint">Alle verfügbaren Spieler werden möglichst eingesetzt.</span></div>
+        </div>
+        <details class="panel bottom"><summary>Bisherige Runden <span id="history-count">(0)</span></summary><div id="history" class="history-list"></div></details>
+        <details class="panel bottom">
+          <summary>So funktioniert die faire Einteilung</summary>
+          <p>Das Verfahren löst eine Variante des <strong>Social-Golfer-Problems</strong>: Möglichst viele unterschiedliche Begegnungen, möglichst wenige Wiederholungen.</p>
+          <ul>
+            <li>Die Auswahl der maximal 12 Spielenden verteilt unfreiwillige Wartezeiten über ein Guthabensystem möglichst gleichmäßig. Freiwillige Pausen zählen nicht als Wartezeit.</li>
+            <li>Für die ausgewählten Personen werden alle möglichen Gruppeneinteilungen geprüft: zuerst möglichst wenige gemeinsame Paare aus der letzten Runde, danach möglichst wenige häufig wiederholte Begegnungen insgesamt. Gleich gute Lösungen werden zufällig gewählt. Auch Doppelpartner werden möglichst gewechselt.</li>
+            <li>Innerhalb jeder Gruppe werden erneute Begegnungen aus der Vorrunde möglichst auf gegnerische Teams verteilt. Danach werden häufige Doppelpartner vermieden. Ist derselbe Partner unvermeidbar, wird Links / Rechts gegenüber eurem letzten gemeinsamen Doppel möglichst getauscht – auch nach einer Wartepause. Bei gleicher Bewertung werden außerdem individuelle Positionswechsel bevorzugt.</li>
+            <li>Links / Rechts ist eine Startposition für diese Runde, keine feste Spielregel während des Ballwechsels. Die Positionen bleiben mit der Runde gespeichert und stehen auch in der Historie. Bei älteren Einteilungen ohne Positionsdaten wird keine damalige Position angenommen.</li>
+            <li>Bei 12 Personen ist eine vollständig neue zweite Runde mathematisch unmöglich: Eine neue Vierergruppe muss mindestens zwei Personen aus einer der nur drei vorherigen Gruppen enthalten. Das Optimum für Runde 2 sind insgesamt 3 wiederholte Paare.</li>
+            <li>Die Platten werden möglichst mit Doppel besetzt. Bei 3 Personen spielt eine Seite allein (2 gegen 1), bei 2 Personen gibt es Einzel. Bei 9 / 10 / 11 Personen werden alle drei Platten genutzt; eine einzelne übrige Person wartet.</li>
+            <li>Hinzufügen, Entfernen und „einmal pausieren“ verändern die laufende Runde nicht. Eine Pause wird mit der nächsten erfolgreichen Einteilung verbraucht. Eine Einteilung zählt sofort zur Historie, auch ohne gestarteten Timer.</li>
+            <li>„Alle Spieler entfernen“ leert nur die Spielerliste nach einer Sicherheitsabfrage. Die aktuelle Runde, der Timer und die Historie bleiben erhalten. Für einen komplett neuen Spielabend gibt es unten „Gesamten Spielabend zurücksetzen“.</li>
+            <li>Nach dem Timerende erscheint ein Signal. Die nächste Runde wird bewusst per Knopfdruck eingeteilt; ihr startet den Timer separat. Der Timer läuft auch bei einem Tabwechsel weiter.</li>
+          </ul>
+          <p>Alles bleibt lokal in diesem Browser gespeichert, ohne Server oder externe Dienste. Bei blockiertem Browserspeicher erscheint eine Warnung; dann bleibt der Stand nur bis zum Schließen erhalten.</p>
+          <button id="reset-session" class="danger quiet">Gesamten Spielabend zurücksetzen</button>
+        </details>
+      </section>
+    </div>
+    <footer>Für entspannte Spielabende, nicht für starre Turnierpläne. · Funktioniert auch offline.</footer>
+  </main>
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title">
+    <h2 id="confirm-title">Neue Runde einteilen?</h2><p id="confirm-text"></p>
+    <div class="dialog-buttons"><button id="confirm-cancel">Abbrechen</button><button id="confirm-ok" class="primary">Bestätigen</button></div>
+  </dialog>
+  <script>
+    "use strict";
+    const STORAGE_KEY = "plattenwechsel.v1";
+    const GROUP_SIZES = [[], [], [2], [3], [4], [3, 2], [3, 3], [4, 3], [4, 4], [3, 3, 3], [4, 3, 3], [4, 4, 3], [4, 4, 4]];
+    const $ = id => document.getElementById(id);
+    const freshState = () => ({ version: 1, players: [], rounds: [], duration: 10, timer: { mode: "ready", remaining: 600000, deadline: null } });
+    let state = freshState();
+    let pendingConfirmation = null;
+    let storageFailed = false;
+
+    function notify(message, error = false) {
+      $("notice").textContent = message;
+      $("notice").classList.toggle("error", error);
+      $("notice").hidden = false;
+    }
+    function save() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        storageFailed = false;
+      } catch (error) {
+        storageFailed = true;
+        console.error("Spielstand konnte nicht gespeichert werden:", error);
+        notify("Der Browser kann den Spielstand nicht speichern. Bitte diese Seite offen lassen; nach dem Schließen können die Daten verloren gehen.", true);
+      }
+    }
+    function isValidState(value) {
+      const finite = n => typeof n === "number" && Number.isFinite(n);
+      const person = p => p && typeof p.id === "string" && typeof p.name === "string" && p.name.length > 0 && p.name.length <= 80;
+      if (!value || value.version !== 1 || !Array.isArray(value.players) || value.players.length > 100 || !Array.isArray(value.rounds)) return false;
+      if (!finite(value.duration) || value.duration < .1 || value.duration > 180) return false;
+      if (!value.players.every(p => person(p) && typeof p.pause === "boolean" && finite(p.credit) && Number.isInteger(p.games) && p.games >= 0 && Number.isInteger(p.waits) && p.waits >= 0)) return false;
+      if (new Set(value.players.map(p => p.id)).size !== value.players.length) return false;
+      for (const round of value.rounds) {
+        if (!round || !Array.isArray(round.groups) || round.groups.length > 3 || !Array.isArray(round.waiting) || !Array.isArray(round.paused) || !finite(round.repeats) || !finite(round.historicalRepeats)) return false;
+        const participants = [];
+        for (const group of round.groups) {
+          if (!Array.isArray(group) || group.length !== 2 || !group.every(team => Array.isArray(team) && team.length >= 1 && team.length <= 2 && team.every(person))) return false;
+          for (const team of group) {
+            const positioned = team.some(p => p.position !== undefined);
+            if (positioned && !team.every((p, index) => p.position === (team.length === 1 ? "center" : index === 0 ? "left" : "right"))) return false;
+          }
+          participants.push(...group.flat());
+        }
+        if (!round.waiting.every(person) || !round.paused.every(person)) return false;
+        participants.push(...round.waiting, ...round.paused);
+        if (new Set(participants.map(p => p.id)).size !== participants.length) return false;
+      }
+      const timer = value.timer;
+      return timer && ["ready", "running", "paused", "finished"].includes(timer.mode) && finite(timer.remaining) && timer.remaining >= 0 && timer.remaining <= value.duration * 60000 && (timer.mode === "running" ? finite(timer.deadline) && value.rounds.length > 0 : timer.deadline === null);
+    }
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw !== null) {
+          const parsed = JSON.parse(raw);
+          if (!isValidState(parsed)) throw new Error("Ungültiges Speicherformat");
+          state = parsed;
+        }
+      } catch (error) {
+        console.error("Spielstand konnte nicht geladen werden:", error);
+        notify("Der gespeicherte Stand konnte nicht geladen werden. Die Anwendung startet leer. Der alte Speichereintrag wird erst bei deiner nächsten Änderung ersetzt.", true);
+      }
+    }
+    function shuffled(items) {
+      const result = items.slice();
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    }
+    function pairKey(a, b) { return JSON.stringify([a, b].sort()); }
+    function eachPair(group, callback) {
+      for (let i = 0; i < group.length; i++) for (let j = i + 1; j < group.length; j++) callback(pairKey(group[i].id, group[j].id));
+    }
+    function encounterMaps(rounds) {
+      const counts = new Map(), recent = new Set(), partners = new Map(), partnerPositions = new Map(), lastPositions = new Map();
+      rounds.forEach((round, index) => {
+        round.groups.forEach(teams => {
+          eachPair(teams.flat(), key => {
+            counts.set(key, (counts.get(key) || 0) + 1);
+            if (index === rounds.length - 1) recent.add(key);
+          });
+          teams.forEach(team => {
+            team.forEach(p => {
+              if (p.position !== undefined) lastPositions.set(p.id, p.position);
+              else lastPositions.delete(p.id);
+            });
+            eachPair(team, key => {
+              partners.set(key, (partners.get(key) || 0) + 1);
+              if (team.every(p => p.position !== undefined)) partnerPositions.set(key, new Map(team.map(p => [p.id, p.position])));
+              else partnerPositions.delete(key);
+            });
+          });
+        });
+      });
+      return { counts, recent, partners, partnerPositions, lastPositions };
+    }
+    function combinations(items, count, callback, start = 0, chosen = []) {
+      if (chosen.length === count) { callback(chosen); return; }
+      for (let i = start; i <= items.length - (count - chosen.length); i++) combinations(items, count, callback, i + 1, [...chosen, items[i]]);
+    }
+    function optimalGroups(players, sizes, maps) {
+      let best = null, bestScore = [Infinity, Infinity], ties = 0;
+      function search(remaining, availableSizes, groups, score) {
+        if (score[0] > bestScore[0] || (score[0] === bestScore[0] && score[1] > bestScore[1])) return;
+        if (!remaining.length) {
+          if (score[0] < bestScore[0] || score[1] < bestScore[1]) { bestScore = score; ties = 0; }
+          ties++;
+          if (Math.random() < 1 / ties) best = groups;
+          return;
+        }
+        // Fix the first player to enumerate unordered partitions without duplicate groups.
+        for (const size of new Set(availableSizes)) {
+          const nextSizes = availableSizes.slice();
+          nextSizes.splice(nextSizes.indexOf(size), 1);
+          combinations(remaining.slice(1), size - 1, others => {
+            const group = [remaining[0], ...others], ids = new Set(group.map(p => p.id));
+            const nextScore = score.slice();
+            eachPair(group, key => {
+              if (maps.recent.has(key)) nextScore[0]++;
+              const count = maps.counts.get(key) || 0;
+              nextScore[1] += count * (count + 1) / 2;
+            });
+            search(remaining.filter(p => !ids.has(p.id)), nextSizes, [...groups, group], nextScore);
+          });
+        }
+      }
+      search(shuffled(players), sizes, [], [0, 0]);
+      return { groups: shuffled(best), score: bestScore };
+    }
+    function splitTeams(group, maps) {
+      const candidates = group.length === 4
+        ? [[[group[0], group[1]], [group[2], group[3]]], [[group[0], group[2]], [group[1], group[3]]], [[group[0], group[3]], [group[1], group[2]]]]
+        : group.length === 3
+          ? [[[group[0], group[1]], [group[2]]], [[group[0], group[2]], [group[1]]], [[group[1], group[2]], [group[0]]]]
+          : [[[group[0]], [group[1]]]];
+      const arrangements = candidates.flatMap(teams => {
+        const orders = team => team.length === 2 ? [team, team.slice().reverse()] : [team];
+        return orders(teams[0]).flatMap(first => orders(teams[1]).map(second => [first, second]));
+      });
+      const positioned = teams => teams.map(team => team.map((p, index) => ({ ...p, position: team.length === 1 ? "center" : index === 0 ? "left" : "right" })));
+      const cost = teams => {
+        const score = [0, 0, 0, 0];
+        teams.forEach(team => {
+          eachPair(team, key => {
+            if (maps.recent.has(key)) score[0]++;
+            const count = maps.partners.get(key) || 0;
+            score[1] += count * (count + 1) / 2;
+            const previous = maps.partnerPositions.get(key);
+            if (previous && team.every(p => previous.get(p.id) === p.position)) score[2]++;
+          });
+          team.forEach(p => { if (p.position !== "center" && maps.lastPositions.get(p.id) === p.position) score[3]++; });
+        });
+        return score;
+      };
+      const compare = (a, b) => {
+        for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] - b[i];
+        return 0;
+      };
+      const ranked = shuffled(arrangements).map(teams => {
+        const result = positioned(teams);
+        return { teams: result, score: cost(result) };
+      }).sort((a, b) => compare(a.score, b.score));
+      return shuffled(ranked[0].teams);
+    }
+    function eligiblePlayers() { return state.players.filter(p => !p.pause); }
+    function createRound() {
+      const eligible = eligiblePlayers();
+      if (eligible.length < 2) { notify("Für eine Runde werden mindestens 2 nicht pausierende Spieler benötigt.", true); return; }
+      const capacity = Math.min(12, eligible.length);
+      const sizes = GROUP_SIZES[capacity];
+      const slots = sizes.reduce((sum, size) => sum + size, 0);
+      const ranked = shuffled(eligible).sort((a, b) => b.credit - a.credit);
+      const selected = ranked.slice(0, slots), selectedIds = new Set(selected.map(p => p.id));
+      const maps = encounterMaps(state.rounds);
+      const result = optimalGroups(selected, sizes, maps);
+      const snapshot = p => ({ id: p.id, name: p.name });
+      let historicalRepeats = 0;
+      result.groups.forEach(group => eachPair(group, key => { if (maps.counts.has(key)) historicalRepeats++; }));
+      const round = {
+        groups: result.groups.map(group => splitTeams(group, maps).map(team => team.map(p => ({ ...snapshot(p), position: p.position })))),
+        waiting: eligible.filter(p => !selectedIds.has(p.id)).map(snapshot),
+        paused: state.players.filter(p => p.pause).map(snapshot),
+        repeats: result.score[0], historicalRepeats
+      };
+      eligible.forEach(p => {
+        p.credit += slots / eligible.length - (selectedIds.has(p.id) ? 1 : 0);
+        if (selectedIds.has(p.id)) p.games++; else p.waits++;
+      });
+      state.players.forEach(p => { p.pause = false; });
+      state.rounds.push(round);
+      state.timer = { mode: "ready", remaining: state.duration * 60000, deadline: null };
+      save();
+      if (!storageFailed) notify(`Runde ${state.rounds.length} ist eingeteilt. Wenn alle bereit sind, den Timer starten.`);
+      render();
+    }
+    function confirmAction(title, message, action) {
+      pendingConfirmation = action;
+      $("confirm-title").textContent = title;
+      $("confirm-text").textContent = message;
+      $("confirm-dialog").showModal();
+      $("confirm-cancel").focus();
+    }
+    function addPlayers(names) {
+      const existing = new Set(state.players.map(p => p.name.toLocaleLowerCase("de")));
+      const additions = [], duplicates = [];
+      for (const name of names) {
+        const key = name.toLocaleLowerCase("de");
+        if (existing.has(key)) duplicates.push(name);
+        else { existing.add(key); additions.push(name); }
+      }
+      if (names.some(name => name.length > 80)) { notify("Ein Spielername darf höchstens 80 Zeichen lang sein.", true); return false; }
+      if (state.players.length + additions.length > 100) { notify("Es sind höchstens 100 Spieler möglich.", true); return false; }
+      if (!additions.length) { notify(duplicates.length ? "Diese Namen stehen bereits in der Liste. Bei gleichen Namen bitte einen Zusatz verwenden." : "Bitte mindestens einen Namen eingeben.", true); return false; }
+      additions.forEach(name => state.players.push({ id: crypto.randomUUID(), name, pause: false, credit: 0, games: 0, waits: 0 }));
+      save();
+      if (!storageFailed) notify(`${additions.length} Spieler hinzugefügt.${duplicates.length ? ` ${duplicates.length} doppelte Namen wurden übersprungen.` : ""} ${state.rounds.length ? "Sie sind ab der nächsten Runde dabei." : ""}`);
+      render();
+      return true;
+    }
+    function textElement(tag, text, className) {
+      const element = document.createElement(tag);
+      element.textContent = text;
+      if (className) element.className = className;
+      return element;
+    }
+    function renderPlayers() {
+      $("player-count").textContent = state.players.length;
+      $("players").replaceChildren();
+      if (!state.players.length) $("players").append(textElement("li", "Noch ist die Liste leer. Trag eure Namen ein oder probiere die Beispielspieler.", "hint"));
+      state.players.forEach(p => {
+        const row = textElement("li", "", "player");
+        row.append(textElement("span", p.name.slice(0, 2).toLocaleUpperCase("de"), "avatar"));
+        const info = textElement("div", "", "player-text");
+        info.append(textElement("div", p.name, "player-name"), textElement("div", p.pause ? "Pausiert in der nächsten Runde" : `${p.games}× gespielt · ${p.waits}× gewartet`, "player-info"));
+        const pause = textElement("button", "Ⅱ", `icon-button${p.pause ? " is-paused" : ""}`);
+        pause.setAttribute("aria-label", `${p.name}: nächste Runde pausieren`);
+        pause.setAttribute("aria-pressed", String(p.pause));
+        pause.title = p.pause ? "Einmalige Pause aufheben" : "Die nächste Runde aussetzen";
+        pause.onclick = () => { p.pause = !p.pause; save(); render(); };
+        const remove = textElement("button", "×", "icon-button danger");
+        remove.setAttribute("aria-label", `${p.name} entfernen`);
+        remove.onclick = () => confirmAction("Spieler entfernen?", `${p.name} wird aus der Liste entfernt. Die aktuelle Einteilung und die Historie bleiben erhalten.`, () => {
+          state.players = state.players.filter(player => player.id !== p.id);
+          save(); render();
+        });
+        row.append(info, pause, remove);
+        $("players").append(row);
+      });
+      $("demo").disabled = state.players.length > 0 || state.rounds.length > 0;
+      $("clear-players").disabled = state.players.length === 0;
+    }
+    function renderCourts() {
+      const round = state.rounds.at(-1);
+      $("courts").replaceChildren();
+      for (let index = 0; index < 3; index++) {
+        const teams = round?.groups[index];
+        const court = textElement("article", "", "court");
+        court.setAttribute("aria-label", `Platte ${index + 1}`);
+        const label = textElement("div", "", "court-label");
+        label.append(textElement("span", `PLATTE ${String(index + 1).padStart(2, "0")}`), textElement("small", teams ? `${teams.flat().length} Spieler` : "Frei"));
+        const table = textElement("div", "", "table");
+        table.append(textElement("div", "", "center-line"));
+        for (let side = 0; side < 2; side++) {
+          const team = textElement("div", "", "team");
+          team.setAttribute("aria-label", `Team ${side + 1}`);
+          if (teams) {
+            const players = side === 0 ? teams[side].slice().reverse() : teams[side];
+            players.forEach(p => {
+              const position = textElement("div", "", `position${players.length === 1 ? " center" : ""}`);
+              const seat = textElement("div", p.name, "seat");
+              seat.title = p.name;
+              const label = p.position === "left" ? "Links" : p.position === "right" ? "Rechts" : p.position === "center" ? "Mitte" : "Unbekannt";
+              const positionLabel = textElement("span", label, "position-label");
+              positionLabel.setAttribute("data-short", p.position === "left" ? "L" : p.position === "right" ? "R" : p.position === "center" ? "Mitte" : "?");
+              positionLabel.title = label;
+              position.append(positionLabel, seat);
+              team.append(position);
+            });
+          } else {
+            const position = textElement("div", "", "position center");
+            position.append(textElement("div", "Noch frei", "seat empty"));
+            team.append(position);
+          }
+          table.append(team);
+        }
+        court.append(label, table, textElement("div", !teams ? round ? "In dieser Runde frei" : "Wartet auf eure erste Einteilung" : teams.flat().length === 4 ? "Doppel · 2 gegen 2" : teams.flat().length === 3 ? "2 gegen 1" : "Einzel · 1 gegen 1", "court-foot"));
+        $("courts").append(court);
+      }
+      $("round-title").textContent = round ? `Runde ${state.rounds.length}` : "Noch keine Runde";
+      $("round-subtitle").textContent = round ? `${round.groups.flat(2).length} spielen · ${round.waiting.length} warten · ${round.paused.length} pausieren` : `${eligiblePlayers().length} verfügbar · mindestens 2 Spieler benötigt`;
+      $("quality").textContent = !round ? "Die erste Einteilung ist zufällig. Danach zählt eure Begegnungshistorie." : state.rounds.length === 1 ? "Erste Runde: zufällig eingeteilt. Viel Spaß an den Platten!" : `${round.repeats} wiederholte Paare zur letzten Runde (Minimum für diese Spielerauswahl) · ${round.historicalRepeats} bereits bekannte Paare insgesamt.`;
+      $("next-round").textContent = round ? "Nächste Runde einteilen →" : "Erste Runde einteilen →";
+      $("next-round").disabled = eligiblePlayers().length < 2;
+      $("waiting").replaceChildren();
+      const waiting = round?.waiting || [], paused = round?.paused || [];
+      $("waiting-count").textContent = waiting.length + paused.length;
+      waiting.forEach(p => $("waiting").append(textElement("span", p.name, "chip")));
+      paused.forEach(p => $("waiting").append(textElement("span", `${p.name} · freiwillige Pause`, "chip pause")));
+      if (!waiting.length && !paused.length) $("waiting").append(textElement("span", round ? "Niemand auf der Bank – alle spielen mit." : "Hier erscheinen Warteplätze und freiwillige Pausen der eingeteilten Runde.", "hint"));
+    }
+    function renderHistory() {
+      $("history-count").textContent = `(${state.rounds.length})`;
+      $("history").replaceChildren();
+      if (!state.rounds.length) $("history").append(textElement("p", "Eure Einteilungen erscheinen hier, sobald die erste Runde startet.", "hint"));
+      state.rounds.slice().reverse().forEach((round, index) => {
+        const entry = textElement("div", "", "history-entry");
+        entry.append(textElement("strong", `Runde ${state.rounds.length - index} · ${round.repeats} wiederholte Paare zur Vorrunde`));
+        round.groups.forEach((teams, plate) => entry.append(textElement("p", `Platte ${plate + 1}: ${teams.map(team => team.map(p => `${p.name}${p.position === "left" ? " (links)" : p.position === "right" ? " (rechts)" : p.position === "center" ? " (Mitte)" : ""}`).join(" + ")).join(" gegen ")}`)));
+        if (round.waiting.length) entry.append(textElement("p", `Warten: ${round.waiting.map(p => p.name).join(", ")}`));
+        if (round.paused.length) entry.append(textElement("p", `Pause: ${round.paused.map(p => p.name).join(", ")}`));
+        $("history").append(entry);
+      });
+    }
+    function remainingTime() { return state.timer.mode === "running" ? Math.max(0, state.timer.deadline - Date.now()) : state.timer.remaining; }
+    function renderTimer() {
+      const milliseconds = remainingTime(), seconds = Math.ceil(milliseconds / 1000);
+      $("timer-readout").textContent = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+      $("progress").style.width = `${Math.min(100, milliseconds / (state.duration * 60000) * 100)}%`;
+      $("timer-toggle").textContent = state.timer.mode === "running" ? "Pausieren" : state.timer.mode === "paused" ? "Fortsetzen" : "Timer starten";
+      $("timer-toggle").disabled = !state.rounds.length || state.timer.mode === "finished";
+      $("timer-reset").disabled = !state.rounds.length;
+      $("duration").disabled = ["running", "paused"].includes(state.timer.mode);
+      $("round-bar").classList.toggle("finished", state.timer.mode === "finished");
+      $("round-state").textContent = state.timer.mode === "finished" ? "Zeit vorbei · Plattenwechsel!" : state.timer.mode === "running" ? "Die Runde läuft" : state.timer.mode === "paused" ? "Timer pausiert" : state.rounds.length ? "Eingeteilt · bereit zum Spielen" : "Bereit, wenn ihr es seid";
+      document.title = state.timer.mode === "running" ? `${$("timer-readout").textContent} · Plattenwechsel` : state.timer.mode === "finished" ? "Zeit vorbei! · Plattenwechsel" : "Plattenwechsel · Tischtennis-Rundenplaner";
+    }
+    function tick() {
+      if (state.timer.mode === "running" && remainingTime() <= 0) {
+        state.timer = { mode: "finished", remaining: 0, deadline: null };
+        save();
+        if (!storageFailed) notify("Zeit vorbei! Die Runde ist beendet. Teilt die nächste Runde ein, sobald ihr bereit seid.");
+      }
+      renderTimer();
+    }
+    function render() {
+      renderPlayers(); renderCourts(); renderHistory();
+      $("duration").value = state.duration;
+      renderTimer();
+    }
+    $("add-form").addEventListener("submit", event => {
+      event.preventDefault();
+      const names = $("names").value.split(/[\n,;]+/).map(name => name.trim()).filter(Boolean);
+      if (addPlayers(names)) $("names").value = "";
+    });
+    $("demo").onclick = () => addPlayers(["Anna", "Ben", "Clara", "David", "Emma", "Felix", "Greta", "Hannes", "Ida", "Jonas", "Klara", "Leon"]);
+    $("next-round").onclick = () => {
+      tick();
+      if (state.rounds.length && state.timer.mode !== "finished") confirmAction("Zur nächsten Runde wechseln?", "Die aktuelle Runde wird abgeschlossen, auch wenn der Timer noch nicht abgelaufen ist. Die neue Einteilung zählt sofort zur Historie.", createRound);
+      else createRound();
+    };
+    $("timer-toggle").onclick = () => {
+      tick();
+      if (!state.rounds.length || state.timer.mode === "finished") return;
+      if (state.timer.mode === "running") state.timer = { mode: "paused", remaining: remainingTime(), deadline: null };
+      else state.timer = { mode: "running", remaining: state.timer.remaining, deadline: Date.now() + state.timer.remaining };
+      save(); tick();
+    };
+    $("timer-reset").onclick = () => confirmAction("Timer zurücksetzen?", "Der Timer wird gestoppt und auf die eingestellte Rundenzeit zurückgesetzt. Die Einteilung bleibt unverändert.", () => {
+      state.timer = { mode: "ready", remaining: state.duration * 60000, deadline: null };
+      save(); renderTimer();
+    });
+    $("duration").addEventListener("change", () => {
+      const duration = Number($("duration").value);
+      if (!Number.isFinite(duration) || duration < .1 || duration > 180) {
+        $("duration").value = state.duration;
+        notify("Bitte eine Rundenzeit zwischen 0,1 und 180 Minuten eingeben.", true);
+        return;
+      }
+      state.duration = duration;
+      state.timer = { mode: "ready", remaining: duration * 60000, deadline: null };
+      save(); renderTimer();
+    });
+    $("clear-players").onclick = () => confirmAction("Alle Spieler entfernen?", "Alle Spieler werden aus der Liste entfernt. Die aktuelle Runde, der Timer und die Historie bleiben erhalten. Dies kann nicht rückgängig gemacht werden.", () => {
+      state.players = [];
+      save(); render();
+      if (!storageFailed) notify("Alle Spieler wurden aus der Liste entfernt. Die aktuelle Runde, der Timer und die Historie bleiben erhalten.");
+    });
+    $("reset-session").onclick = () => confirmAction("Spielabend zurücksetzen?", "Alle Spieler, Begegnungen und Timerdaten werden gelöscht. Dies kann nicht rückgängig gemacht werden.", () => {
+      state = freshState(); save(); render();
+      if (!storageFailed) notify("Der Spielabend wurde zurückgesetzt.");
+    });
+    $("confirm-cancel").onclick = () => $("confirm-dialog").close();
+    $("confirm-ok").onclick = () => {
+      const action = pendingConfirmation;
+      $("confirm-dialog").close();
+      if (action) action();
+    };
+    $("confirm-dialog").addEventListener("close", () => { pendingConfirmation = null; });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
+    load(); tick(); render();
+    setInterval(tick, 250);
+  </script>
+</body>
+</html>

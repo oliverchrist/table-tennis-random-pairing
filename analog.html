@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plattenwechsel · Rotationsplan zum Ausdrucken</title>
+  <style>
+    :root { color-scheme: light; --ink: #183d35; --green: #225f50; --muted: #52685f; --line: #b5c4bb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #e9ede7; color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .screen-note { margin: 16px auto; width: 1080px; font-size: 14px; line-height: 1.5; }
+    a { color: inherit; }
+    .sheet { width: 1080px; margin: 0 auto 24px; padding: 28px 32px; background: white; box-shadow: 0 5px 30px #183d3522; }
+    header { display: flex; justify-content: space-between; align-items: end; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+    h1 { font-size: 29px; margin: 0 0 4px; letter-spacing: -.8px; }
+    header p { margin: 0; font-size: 13px; }
+    .round-time { font-size: 13px; white-space: nowrap; }
+    .instructions { font-size: 13px; line-height: 1.5; margin: 12px 0; }
+    .courts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 38px; }
+    .court h2 { font-size: 17px; text-align: center; margin: 0 0 8px; }
+    .table { position: relative; height: 300px; border: 5px solid var(--green); background: #eef3ed; padding: 17px; display: flex; flex-direction: column; justify-content: space-between; }
+    .table::before { content: ""; position: absolute; inset: 8px; border: 1px solid #668574; }
+    .table::after { content: "NETZ"; position: absolute; top: calc(50% - 9px); left: -8px; right: -8px; border-top: 3px double var(--ink); border-bottom: 3px double var(--ink); background: white; text-align: center; font-size: 9px; letter-spacing: 3px; }
+    .center-line { position: absolute; top: 9px; bottom: 9px; left: 50%; border-left: 1px solid #668574; }
+    .team { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .seat { background: white; border: 1px solid #8ca696; text-align: center; padding: 6px; min-width: 0; }
+    .position { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .number { display: block; font-size: 43px; line-height: 1.15; font-weight: 800; }
+    .destination { display: block; font-size: 13px; font-weight: 650; border-top: 1px solid #ced8d0; padding-top: 3px; margin-top: 4px; }
+    .legend { text-align: center; margin: 8px 0 12px; font-size: 11px; color: var(--muted); }
+    .rotation-heading { margin: 0 0 7px; font-size: 15px; }
+    .rotation { display: grid; grid-template-columns: repeat(12, 1fr); gap: 5px; }
+    .move { border: 1px solid var(--line); padding: 7px 2px; text-align: center; font-size: 17px; font-weight: 750; white-space: nowrap; }
+    .cycle { font-size: 12px; margin: 7px 0 12px; }
+    .notes { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; border-top: 1px solid var(--line); padding-top: 12px; }
+    .notes h2 { margin: 0 0 5px; font-size: 15px; }
+    .notes p { font-size: 11px; line-height: 1.5; margin: 5px 0; }
+    .bank { display: flex; gap: 12px; align-items: center; border: 2px dashed #7b8e80; padding: 9px 12px; margin: 6px 0; }
+    .bank-number { font-size: 28px; font-weight: 800; }
+    .bank-route { font-size: 19px; font-weight: 750; }
+    .bank small { font-size: 10px; display: block; font-weight: 400; }
+    footer { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 12px; font-size: 10px; color: var(--muted); display: flex; justify-content: space-between; }
+    @page { size: A4 landscape; margin: 8mm; }
+    @media print {
+      body { background: white; }
+      .screen-note { display: none; }
+      .sheet { width: 100%; padding: 0; margin: 0; box-shadow: none; }
+      header { padding-bottom: 8px; }
+      h1 { font-size: 25px; }
+      .table { height: 110mm; }
+      .instructions { margin: 8px 0; font-size: 12px; }
+      .number { font-size: 58px; }
+      .legend { margin: 5px 0 8px; }
+      .cycle { margin: 5px 0 8px; }
+      .notes { break-before: page; padding-top: 12px; gap: 32px; }
+      .notes h2 { font-size: 22px; margin-bottom: 12px; }
+      .notes p { font-size: 15px; line-height: 1.6; margin: 12px 0; }
+      .bank { padding: 18px; margin: 16px 0; }
+      .bank-number { font-size: 40px; }
+      .bank-route { font-size: 23px; }
+      .bank small { font-size: 13px; }
+      footer { margin-top: 8px; padding-top: 5px; }
+      .court, .notes, .rotation { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <p class="screen-note">Statischer Ausdruck ohne App oder JavaScript. Drucken mit <strong>⌘P / Strg+P</strong>: A4, Querformat, Skalierung 100 %, Kopf- und Fußzeilen ausschalten. <a href="index.html">Zur dynamischen Einteilung</a></p>
+  <main class="sheet">
+    <header>
+      <div><h1>Plattenwechsel – immer derselbe Weg.</h1><p>12 Personen · 3 Doppel · feste Platznummern · gemeinsam nach jeder Runde wechseln</p></div>
+      <div class="round-time">Rundenzeit: ______ Minuten</div>
+    </header>
+    <p class="instructions"><strong>So geht’s:</strong> Startet mit einer Person auf jedem Platz. Merkt euch die Nummer <strong>eures aktuellen Platzes</strong>. Nach jeder Runde geht ihr zur angegebenen nächsten Nummer. Die Nummern bleiben an der Platte – nicht an den Personen.</p>
+    <section class="courts" aria-label="Die zwölf Spielplätze">
+      <article class="court">
+        <h2>PLATTE 1</h2>
+        <div class="table">
+          <div class="center-line"></div>
+          <div class="team" aria-label="Oberes Team">
+            <div class="seat"><span class="position">Rechts</span><strong class="number">2</strong><span class="destination">weiter zu 6 →</span></div>
+            <div class="seat"><span class="position">Links</span><strong class="number">1</strong><span class="destination">weiter zu 11 →</span></div>
+          </div>
+          <div class="team" aria-label="Unteres Team">
+            <div class="seat"><span class="position">Links</span><strong class="number">3</strong><span class="destination">weiter zu 9 →</span></div>
+            <div class="seat"><span class="position">Rechts</span><strong class="number">4</strong><span class="destination">weiter zu 1 →</span></div>
+          </div>
+        </div>
+      </article>
+      <article class="court">
+        <h2>PLATTE 2</h2>
+        <div class="table">
+          <div class="center-line"></div>
+          <div class="team" aria-label="Oberes Team">
+            <div class="seat"><span class="position">Rechts</span><strong class="number">6</strong><span class="destination">weiter zu 10 →</span></div>
+            <div class="seat"><span class="position">Links</span><strong class="number">5</strong><span class="destination">weiter zu 8 →</span></div>
+          </div>
+          <div class="team" aria-label="Unteres Team">
+            <div class="seat"><span class="position">Links</span><strong class="number">7</strong><span class="destination">weiter zu 3 →</span></div>
+            <div class="seat"><span class="position">Rechts</span><strong class="number">8</strong><span class="destination">weiter zu 2 →</span></div>
+          </div>
+        </div>
+      </article>
+      <article class="court">
+        <h2>PLATTE 3</h2>
+        <div class="table">
+          <div class="center-line"></div>
+          <div class="team" aria-label="Oberes Team">
+            <div class="seat"><span class="position">Rechts</span><strong class="number">10</strong><span class="destination">weiter zu 7 →</span></div>
+            <div class="seat"><span class="position">Links</span><strong class="number">9</strong><span class="destination">weiter zu 12 →</span></div>
+          </div>
+          <div class="team" aria-label="Unteres Team">
+            <div class="seat"><span class="position">Links</span><strong class="number">11</strong><span class="destination">weiter zu 5 →</span></div>
+            <div class="seat"><span class="position">Rechts</span><strong class="number">12</strong><span class="destination">weiter zu 4 →</span></div>
+          </div>
+        </div>
+      </article>
+    </section>
+    <p class="legend">Links / Rechts gilt aus Sicht des jeweiligen Teams beim Blick zum Netz. Oben ist die Darstellung deshalb gespiegelt. Die Position ist eure Startposition, keine feste Ballwechselregel.</p>
+    <h2 class="rotation-heading">Nach jeder Runde: aktueller Platz → nächster Platz</h2>
+    <section class="rotation" aria-label="Fester Wechselplan">
+      <div class="move" data-from="1" data-to="11">1 → 11</div>
+      <div class="move" data-from="2" data-to="6">2 → 6</div>
+      <div class="move" data-from="3" data-to="9">3 → 9</div>
+      <div class="move" data-from="4" data-to="1">4 → 1</div>
+      <div class="move" data-from="5" data-to="8">5 → 8</div>
+      <div class="move" data-from="6" data-to="10">6 → 10</div>
+      <div class="move" data-from="7" data-to="3">7 → 3</div>
+      <div class="move" data-from="8" data-to="2">8 → 2</div>
+      <div class="move" data-from="9" data-to="12">9 → 12</div>
+      <div class="move" data-from="10" data-to="7">10 → 7</div>
+      <div class="move" data-from="11" data-to="5">11 → 5</div>
+      <div class="move" data-from="12" data-to="4">12 → 4</div>
+    </section>
+    <p class="cycle"><strong>Der gesamte Weg:</strong> 1 → 11 → 5 → 8 → 2 → 6 → 10 → 7 → 3 → 9 → 12 → 4 → 1. Jede Person durchläuft jeden Platz.</p>
+    <section class="notes">
+      <div>
+        <h2>Was dieser feste Plan leistet</h2>
+        <p><strong>Ohne Bank:</strong> Bei jedem Wechsel bleiben genau 3 gemeinsame Spielerpaare auf derselben Platte – das unvermeidbare Minimum bei 12 Personen. Niemand behält direkt denselben Doppelpartner. Wenn ein Doppel später erneut zusammenkommt, tauschen beide Links / Rechts.</p>
+        <p>In 12 Runden trifft jede Person <strong>10 der 11 anderen</strong> auf einer Platte und hat <strong>4 verschiedene Doppelpartner</strong>. Nach 12 Wechseln beginnt der Plan von vorne. Das ist ein einfacher, geprüfter Rotationspfad, kein vollständiger Jeder-mit-jedem-Turnierplan. Die App kann über mehrere Runden flexibler optimieren.</p>
+      </div>
+      <div>
+        <h2>Optional: eine Wartebank einschieben</h2>
+        <div class="bank"><span class="bank-number">13</span><div class="bank-route">12 → 13 (Pause) → 4<small>Ersetzt nur die direkte Verbindung 12 → 4.</small></div></div>
+        <p><strong>Mit 12 Personen:</strong> Ohne Bank gilt direkt 12 → 4: alle spielen Doppel. Wollt ihr trotzdem Pausen, startet Platz 13 leer. Beim ersten Wechsel geht 12 auf die Bank und Platz 4 bleibt leer. Beim nächsten Wechsel geht die Bankperson auf 4; nun bleibt Platz 1 leer, weil von 4 niemand kommt. So wandert die Lücke weiter: meist spielen 11 Personen, davon eine Platte <strong>2 gegen 1</strong>. Ist die Bank leer, spielen alle 12.</p>
+        <p><strong>Mit 13+ Personen:</strong> 12 spielen, alle übrigen warten auf der Bank. Nach jeder Runde geht die vorderste Person auf Platz 4; die Person von Platz 12 stellt sich hinten an. So bleiben alle drei Doppel voll. Bei 13 Personen pausiert jeder eine Runde je 13 Runden; bei mehr Personen dauert die Pause entsprechend länger. Die Begegnungs- und Partnergarantien gelten nur ohne Bank.</p>
+      </div>
+    </section>
+    <footer><span>Plattenwechsel · Analogplan für euren Spielabend</span><span>Zwei Seiten · A4 quer · Nummern und Ziele bleiben fest</span></footer>
+  </main>
+</body>
+</html>
